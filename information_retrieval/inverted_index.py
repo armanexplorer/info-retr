@@ -58,7 +58,6 @@ class InvertedIndex:
         # from Python 3.7 onwards
 
     def __enter__(self):
-        print('here1')
         """Opens the index_file and loads metadata upon entering the context"""
         # Open the index file
         self.index_file = open(self.index_file_path, 'rb+')
@@ -74,6 +73,7 @@ class InvertedIndex:
         """Closes the index_file and saves metadata upon exiting the context"""
         # Close the index file
         self.index_file.close()
+        # print(self.terms)
 
         # Write the postings dict and terms to the metadata file
         with open(self.metadata_file_path, 'wb') as f:
@@ -114,6 +114,7 @@ class InvertedIndexWriter(InvertedIndex):
 
         self.postings_dict[term] = (self.index_file.tell(), len(
             postings_list), len(encode_posting_list))
+        self.terms.append(term)
 
         self.index_file.write(encode_posting_list)
 
@@ -147,9 +148,16 @@ class InvertedIndexIterator(InvertedIndex):
         index file in memory.
         """
         # Begin your code
+        # print('here in next')
         next_term = self.term_iter.__next__()
+        # print(next_term)
+        # print(self.postings_dict , 'posring')
+        # if not next_term:
+        #     raise StopIteration
+        # print('after next')
 
-        next_postings = self.postings_dict.get[next_term]
+        next_postings = self.postings_dict.get(next_term)
+        # print(next_postings , ' next posing')
 
         self.index_file.seek(next_postings[0])
 
@@ -157,7 +165,7 @@ class InvertedIndexIterator(InvertedIndex):
 
         next_postings_list = self.postings_encoding.decode(encode_next_postings_list)
 
-        return (next_term, next_postings_list)
+        return next_term, next_postings_list
         # End your code
 
     def delete_from_disk(self):
@@ -178,6 +186,14 @@ class InvertedIndexIterator(InvertedIndex):
 
 
 class InvertedIndexMapper(InvertedIndex):
+
+
+
+
+ 
+    def __enter__(self):
+        return super().__enter__()
+ 
     def __getitem__(self, key):
         return self._get_postings_list(key)
 
@@ -189,14 +205,17 @@ class InvertedIndexMapper(InvertedIndex):
         corresponding to the postings list for the requested term.
         """
         # Begin your code
+        postings = self.postings_dict.get(term)
 
-        postings = self.postings_dict.get[term]
+        if term not in self.terms: #check not in corpus
+            return []
 
         self.index_file.seek(postings[0])
 
         encode_postings_list = self.index_file.read(postings[2])
 
         posting_list = self.postings_encoding.decode(encode_postings_list)
+        # print(posting_list , 'posting_list')
 
         return posting_list
 

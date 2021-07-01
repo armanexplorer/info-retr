@@ -97,7 +97,8 @@ class BSBIIndex:
         td_pairs = list()
         for filename in os.listdir(os.path.join(self.data_dir, block_dir_relative)):
             with open(os.path.join(self.data_dir, block_dir_relative, filename), 'r') as f:
-                doc_id = self.doc_id_map._get_id(filename)
+                doc_id = self.doc_id_map._get_id(os.path.join(
+                    self.data_dir, block_dir_relative, filename))
                 tokens = word_tokenize(f.read())
                 for token in tokens:
                     token_id = self.term_id_map._get_id(token)
@@ -119,21 +120,11 @@ class BSBIIndex:
         # Begin your code
         d = dict()
 
-        # print(td_pairs)
         for pair in td_pairs:
-            # l.append(pair[1])
-            l = d.get(pair[0])
-            if l is None :
-                print('is none')
-                l = []
+            l = d.get(pair[0], [])
             l.append(pair[1])
             d[pair[0]] = l
-            # t.append(pair[1])
-            # print(d)
-                
 
-
-        print(d) 
 
         for term, postings_list in d.items():
             index.append(term, postings_list)
@@ -154,8 +145,12 @@ class BSBIIndex:
         # Begin your code
 
         d = dict()
+        # print(indices)
         for index in indices:
+            # print(index)
             for term_id, postings_list in index:
+                # print(term_id , postings_list , 'my print')
+                # print(value)
                 l: list = d.get(term_id, [])
                 l.extend(postings_list)
                 merged_index.append(term_id, l)
@@ -184,29 +179,33 @@ class BSBIIndex:
             self.load()
 
         # Begin your code
+        with InvertedIndexMapper(self.index_name, directory=self.output_dir,
+                                 postings_encoding=self.postings_encoding) as merged_index:
+            # index = InvertedIndexMapper(
+            #     self.index_name, directory=self.output_dir,
+            #     postings_encoding=self.postings_encoding
+            # )
+            tokens = word_tokenize(query)
 
-        index = InvertedIndexMapper(
-            self.index_name, directory=self.output_dir,
-            postings_encoding=self.postings_encoding
-        )
-        tokens = word_tokenize(query)
+            last_posting_list_doc_names: List[str] = None
 
-        last_posting_list_doc_names: List[str] = list()
+            for token in tokens:
+                posting_list = merged_index._get_postings_list(
+                    self.term_id_map[token])
+                posting_list_doc_names = sorted([self.doc_id_map[docid]
+                                                 for docid in posting_list])
 
-        for token in tokens:
-            posting_list = index._get_postings_list(token)
-            posting_list_doc_names = [self.doc_id_map[docid]
-                                      for docid in posting_list].sort()
-            last_posting_list = sorted_intersect(
-                posting_list_doc_names, last_posting_list_doc_names)
+                last_posting_list_doc_names = sorted_intersect(
+                    posting_list_doc_names, last_posting_list_doc_names)
 
-        return last_posting_list
+            return last_posting_list_doc_names
 
         # End your code
 
 
 def sorted_intersect(list1: List[Any], list2: List[Any]):
     """Intersects two (ascending) sorted lists and returns the sorted result
+
 
     Parameters
     ----------
@@ -220,5 +219,7 @@ def sorted_intersect(list1: List[Any], list2: List[Any]):
         Sorted intersection
     """
     # Begin your code
+    if list2 is None:
+        return list1
     return list(set(list1).intersection(set(list2)))
     # End your code
