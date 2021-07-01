@@ -18,15 +18,19 @@ class Idf:
         Hint: For term not in built dictionary, we should return math.log10(total_doc_num / 1.0).
     """
 
-    def __init__(self, total_doc_num, term_id_map, posting_dict):
+    def __init__(self, total_doc_num, term_id_map: IdMap, posting_dict):
         """Build an idf dictionary"""
         self.total_doc_num = total_doc_num
         self.total_term_num = len(term_id_map)
         self.postings_dict = posting_dict
         self.term_id_map: IdMap = term_id_map
-
+        self.idf = {}
+        
+        for term in term_id_map.str_to_id.keys():
+            self.idf[term] = self.get_idf(term)
+            
     def get_idf(self, term=None):
-        """Return idf of return idf of a term, whether in or not in built dictionary.
+        """Return idf of a term, whether in or not in built dictionary.
         Args:
             term(str) : term to return its idf
         Return(float):
