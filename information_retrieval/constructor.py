@@ -96,7 +96,7 @@ class BSBIIndex:
 
         td_pairs = list()
         for filename in os.listdir(os.path.join(self.data_dir, block_dir_relative)):
-            with open(os.path.join(self.data_dir, block_dir_relative, filename), 'r') as f:
+            with open(os.path.join(self.data_dir, block_dir_relative, filename), 'r', encoding='utf8') as f:
                 doc_id = self.doc_id_map._get_id(os.path.join(
                     self.data_dir, block_dir_relative, filename))
                 tokens = word_tokenize(f.read())
