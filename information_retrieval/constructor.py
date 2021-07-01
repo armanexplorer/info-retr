@@ -181,10 +181,6 @@ class BSBIIndex:
         # Begin your code
         with InvertedIndexMapper(self.index_name, directory=self.output_dir,
                                  postings_encoding=self.postings_encoding) as merged_index:
-            # index = InvertedIndexMapper(
-            #     self.index_name, directory=self.output_dir,
-            #     postings_encoding=self.postings_encoding
-            # )
             tokens = word_tokenize(query)
 
             last_posting_list_doc_names: List[str] = None
