@@ -31,6 +31,7 @@ class BSBIIndex:
 
         # Stores names of intermediate indices
         self.intermediate_indices = []
+        self.index()
 
     def save(self):
         """Dumps doc_id_map and term_id_map into output directory"""
@@ -118,9 +119,21 @@ class BSBIIndex:
         # Begin your code
         d = dict()
 
+        # print(td_pairs)
         for pair in td_pairs:
-            l: list = d.get(pair[0], [])
+            # l.append(pair[1])
+            l = d.get(pair[0])
+            if l is None :
+                print('is none')
+                l = []
             l.append(pair[1])
+            d[pair[0]] = l
+            # t.append(pair[1])
+            # print(d)
+                
+
+
+        print(d) 
 
         for term, postings_list in d.items():
             index.append(term, postings_list)
